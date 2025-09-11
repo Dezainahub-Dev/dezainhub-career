@@ -1,0 +1,66 @@
+import Marquee from "react-fast-marquee"
+import Image from "next/image"
+
+export default function TeamMarquee() {
+  const OurTeam = [
+    {
+      id: 1,
+      name: "Divyankit Singh",
+      role: "Founder & Creative Director",
+      image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177015/Frame_1707482778_hyr47u.png",
+    },
+    {
+      id: 2,
+      name: "Aniket Biswas",
+      role: "Lead Designer",
+      image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177016/Frame_1707482778-2_ubz9vy.png",
+    },
+    {
+      id: 3,
+      name: "Sourav Kumar",
+      role: "Senior Software Engineer",
+      image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177016/Frame_1707482778-1_jj6lrq.png",
+    },
+    {
+      id: 4,
+      name: "Minesh Patel",
+      role: "Software Engineer",
+      image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177015/Frame_1707482779_tprr3p.png",
+    },
+    {
+      id: 5,
+      name: "Varidh Srivastav",
+      role: "Software Engineer",
+      image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177015/image_hbsxoa.png",
+    },
+  ]
+
+  return (
+    <Marquee className="">
+      <div className="flex flex-row gap-8 pr-8">
+        {OurTeam.map((member) => (
+          <div
+            key={member.id}
+            className="relative md:h-[588px] md:w-[392px] border border-hero_section_border rounded-[24px] overflow-hidden group cursor-pointer"
+          >
+            <div className="relative w-full h-full">
+              <Image
+                src={member.image || "/placeholder.svg"}
+                alt={member.name}
+                width={300}
+                height={200}
+                className="w-full h-full filter grayscale transition-all duration-300 group-hover:grayscale-0"
+              />
+            </div>
+            <div className="flex flex-col p-4 absolute rounded-b-[24px] bottom-0 left-0 w-full h-28 bg-[radial-gradient(153.71%_117.75%_at_100%_0%,_#01222E_0%,_#021921_100%)]">
+              <div className="text-white font-semibold text-[24px] md:text-[32px] leading-[40px] font-Manrope">
+                {member.name}
+              </div>
+              <div className="text-white text-[16px] md:text-[20px] leading-[32px] font-Nunito">{member.role}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Marquee>
+  )
+}
