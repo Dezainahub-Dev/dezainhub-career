@@ -38,8 +38,8 @@ const reasons = [
   {
     id: 4,
     icon: Scale,
-    title: "Positive environment",
-    desc: "We believe in creating a positive and inspiring environment for everyone where diverse ideas and creativity thrive. Join a team that values respect, openness, and innovation.",
+    title: "Balance",
+    desc: "We value personal time and promote a balanced lifestyle. With flexible working options, you can manage both your career and personal life effectively.",
   },
   {
     id: 5,

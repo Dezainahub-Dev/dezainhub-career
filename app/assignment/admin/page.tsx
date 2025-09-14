@@ -30,7 +30,7 @@ const AdminPage: React.FC = () => {
   useEffect(() => {
     let unsubscribe: () => void;
   
-    const allowedEmails = ['sourav2000kumar07@gmail.com', 'divyankithub@gmail.com', 'ashwin0119.as@gmail.com']; 
+    const allowedEmails = ['varidhsrivastava19145@gmail.com', 'divyankithub@gmail.com']; 
     if (auth) {
       unsubscribe = onAuthStateChanged(auth, (currentUser) => {
         if (!currentUser) {

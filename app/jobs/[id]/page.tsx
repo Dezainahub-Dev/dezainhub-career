@@ -91,47 +91,57 @@ const JobDescriptionPage: React.FC = () => {
     setFile(null);
   }, []);
 
-  const handleFileUpload = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const uploadedFile = e.target.files?.[0];
-      if (!uploadedFile) return;
+const handleFileUpload = useCallback(
+  async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const uploadedFile = e.target.files?.[0];
+    if (!uploadedFile) return;
 
-      // Validate file size and type first
-      if (uploadedFile.size > 5 * 1024 * 1024) {
-        return toast.error("File size exceeds 5MB limit.");
+    // Validate file size and type first
+    if (uploadedFile.size > 5 * 1024 * 1024) {
+      return toast.error("File size exceeds 5MB limit.");
+    }
+    if (uploadedFile.type !== "application/pdf") {
+      return toast.error("Please upload a PDF file");
+    }
+
+    setTimeout(() => {
+      setFile(uploadedFile);
+    }, 1500);
+
+    try {
+      console.log("Uploading file:", uploadedFile);
+      console.log("Using preset:", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+      console.log("Cloudinary cloud name:", process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME);
+
+      const uploadData = new FormData();
+      uploadData.append("file", uploadedFile);
+      uploadData.append("upload_preset", "varidh");
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`,
+        {
+          method: "POST",
+          body: uploadData,
+        }
+      );
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Upload failed: ${errText}`);
       }
-      if (uploadedFile.type !== "application/pdf") {
-        return toast.error("Please upload a PDF file");
-      }
 
-      // Optionally simulate a delay before setting the file state
-      setTimeout(() => {
-        setFile(uploadedFile);
-      }, 1500);
+      const data = await response.json();
+      console.log("Cloudinary response:", data);
+      setFormData((prev) => ({ ...prev, resumeUrl: data.secure_url }));
+      toast.success("Resume uploaded successfully!");
+    } catch (error) {
+      console.error("Cloudinary Upload Error:", error);
+      toast.error("Failed to upload resume. Please try again.");
+    }
+  },
+  []
+);
 
-      try {
-        const uploadData = new FormData();
-        uploadData.append("file", uploadedFile);
-        uploadData.append("upload_preset", "sourav0299");
-
-        const response = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
-          {
-            method: "POST",
-            body: uploadData,
-          }
-        );
-
-        if (!response.ok) throw new Error("Failed to upload resume");
-        const data = await response.json();
-        setFormData((prev) => ({ ...prev, resumeUrl: data.secure_url }));
-      } catch (error) {
-        console.error("Cloudinary Upload Error:", error);
-        toast.error("Failed to upload resume. Please try again.");
-      }
-    },
-    []
-  );
 
   const handleSubmit = useCallback(
     async (

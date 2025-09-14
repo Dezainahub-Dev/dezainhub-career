@@ -38,9 +38,8 @@ const AdminApplicationPage: React.FC = () => {
     let unsubscribe: () => void;
 
     const allowedEmails = [
-      "sourav2000kumar07@gmail.com",
+      "varidhsrivastava19145@gmail.com",
       "divyankithub@gmail.com",
-      'ashwin0119.as@gmail.com'
     ];
     if (auth) {
       unsubscribe = onAuthStateChanged(auth, (currentUser) => {

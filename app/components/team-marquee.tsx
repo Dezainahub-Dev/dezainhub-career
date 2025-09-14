@@ -15,20 +15,20 @@ export default function TeamMarquee() {
       role: "Lead Designer",
       image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177016/Frame_1707482778-2_ubz9vy.png",
     },
+    // {
+    //   id: 3,
+    //   name: "Sourav Kumar",
+    //   role: "Senior Software Engineer",
+    //   image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177016/Frame_1707482778-1_jj6lrq.png",
+    // },
     {
       id: 3,
-      name: "Sourav Kumar",
-      role: "Senior Software Engineer",
-      image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177016/Frame_1707482778-1_jj6lrq.png",
-    },
-    {
-      id: 4,
       name: "Minesh Patel",
       role: "Software Engineer",
       image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177015/Frame_1707482779_tprr3p.png",
     },
     {
-      id: 5,
+      id: 4,
       name: "Varidh Srivastav",
       role: "Software Engineer",
       image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177015/image_hbsxoa.png",

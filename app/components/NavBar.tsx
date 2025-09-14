@@ -117,39 +117,62 @@ export default function NavBar() {
             </div>
 
             <button
-              onClick={() => setIsOpen(true)}
-              className={`pl-4 pr-2 py-2 cursor-pointer rounded-full h-12 bg-primary-gradient text-white font-Manrope font-semibold flex items-center justify-between gap-2 transition-all duration-500 ease-in-out ${
-                isScrolled ? "max-w-[160px] text-sm" : ""
-              }`}
-            >
-              <span className={`transition-all duration-500 ease-in-out ${isScrolled ? "text-sm" : ""}`}>
-                Contact Us
-              </span>
-              <span className="p-2 bg-white rounded-full w-8 h-8 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M2.66602 8H13.3327M13.3327 8L9.33268 4M13.3327 8L9.33268 12"
-                    stroke="url(#paint0_linear_1309_28693)"
-                    strokeWidth="1.33333"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <defs>
-                    <linearGradient
-                      id="paint0_linear_1309_28693"
-                      x1="2.66602"
-                      y1="4"
-                      x2="10.346"
-                      y2="14.24"
-                      gradientUnits="userSpaceOnUse"
-                    >
-                      <stop stopColor="#25C3EC" />
-                      <stop offset="1" stopColor="#1765AA" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </span>
-            </button>
+        onClick={() => setIsOpen(true)}
+        className={`pl-4 pr-2 py-2 cursor-pointer rounded-full h-12  bg-gradient-to-r from-[#25C3EC] to-[#1765AA] text-white font-semibold flex items-center justify-between gap-1 transition-all duration-700 ease-in-out relative group overflow-hidden ${
+          isScrolled ? "max-w-[160px] text-sm w-36" : "w-40"
+        }`}
+      >
+        {/* White background that slides from left to right */}
+        <div className="absolute inset-0 bg-white rounded-full transform -translate-x-full transition-transform duration-500 ease-in-out group-hover:translate-x-0 z-0"></div>
+
+        {/* Arrow icon container - changes from white to gradient blue */}
+        <div className="absolute right-1 top-1 bg-white group-hover:bg-gradient-to-r group-hover:from-[#25C3EC] group-hover:to-[#1765AA] rounded-full h-10 w-10 flex items-center justify-center z-10 transition-all duration-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            className="transform -rotate-45 group-hover:rotate-0 transition-transform duration-500"
+          >
+            <path
+              d="M2.66602 8H13.3327M13.3327 8L9.33268 4M13.3327 8L9.33268 12"
+              stroke="url(#paint0_linear_1309_28693)"
+              strokeWidth="1.33333"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="group-hover:stroke-white transition-all duration-500"
+            />
+            <defs>
+              <linearGradient
+                id="paint0_linear_1309_28693"
+                x1="2.66602"
+                y1="4"
+                x2="10.346"
+                y2="14.24"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stopColor="#25C3EC" />
+                <stop offset="1" stopColor="#1765AA" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        {/* Original text that slides up and disappears */}
+        <span
+          className={`transition-all duration-500 ease-in-out relative z-20 group-hover:-translate-y-8 group-hover:opacity-0 ${isScrolled ? "text-sm" : ""}`}
+        >
+          Contact Us
+        </span>
+
+        {/* New text that appears in the same position */}
+        <span
+          className={`absolute left-4 top-1/2 transform -translate-y-1/2 opacity-0 transition-all duration-500 ease-in-out delay-200 z-20 text-blue-500 font-semibold group-hover:opacity-100 ${isScrolled ? "text-sm" : ""}`}
+        >
+          Contact Us
+        </span>
+      </button>
           </div>
 
           {/* Mobile menu toggle button */}

@@ -101,9 +101,8 @@ export default function JobApplicantsTable() {
   // Authentication and data fetching
   useEffect(() => {
     const allowedEmails = [
-      'sourav2000kumar07@gmail.com', 
-      'divyankithub@gmail.com', 
-      'ashwin0119.as@gmail.com'
+      'varidhsrivastava19145@gmail.com', 
+      'divyankithub@gmail.com',
     ];
     
     if (!auth) {

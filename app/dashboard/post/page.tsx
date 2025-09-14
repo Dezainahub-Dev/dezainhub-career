@@ -60,9 +60,8 @@ export default function PostJobPage() {
     }
 
     const allowedEmails = [
-      "sourav2000kumar07@gmail.com",
+      "varidhsrivastava19145@gmail.com",
       "divyankithub@gmail.com",
-      "ashwin0119.as@gmail.com",
     ];
     const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
       if (!user || !allowedEmails.includes(user.email || "")) {
