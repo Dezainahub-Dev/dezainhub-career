@@ -18,12 +18,14 @@ export default function NavBar() {
   const mainPages = [
     "/",
     "/projects",
-    "/career",
     "/products",
+    "/career",
+    
     "https://www.dezainahub.com/",
     "https://www.dezainahub.com/projects",
+    "https://www.dezainahub.com/products",
     "https://career.dezainahub.com",
-    "https://www.dezainahub.com/products"
+    
   ]
 
   // Check if current path is a main page
@@ -32,8 +34,9 @@ export default function NavBar() {
   const navItems = [
     { name: "Home", path: "https://www.dezainahub.com/" },
     { name: "Projects", path: "https://www.dezainahub.com/projects" },
-    { name: "Career", path: "https://career.dezainahub.com" },
     { name: "Products", path: "https://www.dezainahub.com/products" },
+    { name: "Career", path: "https://career.dezainahub.com" },
+    
   ]
 
   const handleScroll = useCallback(() => {
