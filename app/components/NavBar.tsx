@@ -34,7 +34,7 @@ export default function NavBar() {
   const navItems = [
     { name: "Home", path: "https://www.dezainahub.com/" },
     { name: "Projects", path: "https://www.dezainahub.com/projects" },
-    { name: "Products", path: "https://www.dezainahub.com/products" },
+    { name: "Product", path: "https://www.dezainahub.com/products" },
     { name: "Career", path: "https://career.dezainahub.com" },
     
   ]
