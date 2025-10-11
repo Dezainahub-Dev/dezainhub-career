@@ -18,12 +18,12 @@ export default function NavBar() {
   const mainPages = [
     "/",
     "/projects",
-    "/product",
+    "/products",
     "/career",
     
     "https://www.dezainahub.com/",
     "https://www.dezainahub.com/projects",
-    "https://www.dezainahub.com/product",
+    "https://www.dezainahub.com/products",
     "https://career.dezainahub.com",
     
   ]
