@@ -43,6 +43,7 @@ interface Job {
   workType: string;
   Tags: string[];
   date: any;
+  isVisible?: boolean;
 }
 
 export default function DashboardPage() {
@@ -136,6 +137,7 @@ export default function DashboardPage() {
         responsibilty: editJob.responsibilty || "",
         workType: editJob.workType || "",
         Tags: editJob.Tags || [],
+        isVisible: editJob.isVisible,
       });
 
       if (response.data.success) {
@@ -145,6 +147,28 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error("Error updating job:", error);
+    }
+  };
+
+  const handleToggleVisibility = async (
+    jobId: string,
+    currentVisibility: boolean
+  ) => {
+    try {
+      const response = await axios.put(`/api/jobs/${jobId}/toggle-visibility`, {
+        isVisible: !currentVisibility,
+      });
+
+      if (response.data.success) {
+        setJobs(
+          jobs.map((job) =>
+            job.id === jobId ? { ...job, isVisible: !currentVisibility } : job
+          )
+        );
+        console.log("Job visibility updated successfully");
+      }
+    } catch (error) {
+      console.error("Error updating job visibility:", error);
     }
   };
   if (loading) return <p>Loading jobs...</p>;
@@ -180,6 +204,7 @@ export default function DashboardPage() {
               job={job}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onToggleVisibility={handleToggleVisibility}
             />
           ))
         ) : (
@@ -268,6 +293,29 @@ export default function DashboardPage() {
                   />
                 </div>
               </div>
+              <div className="flex flex-row gap-6 pb-6">
+                <div className="w-full">
+                  <Label className="text-black font-Nunito">Visibility</Label>
+                  <Select
+                    value={editJob.isVisible !== false ? "visible" : "hidden"}
+                    onValueChange={(value) =>
+                      setEditJob({ ...editJob, isVisible: value === "visible" })
+                    }
+                  >
+                    <SelectTrigger className="p-3 font-Nunito text-[16px] text-[#999] rounded-[8px] border border-[#ccc]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="visible">
+                        Visible on Career Page
+                      </SelectItem>
+                      <SelectItem value="hidden">
+                        Hidden from Career Page
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <div className="pb-8 font-Manrope text-black text-[26px] leading-[32px] font-semibold pt-6">
                 Job Details
               </div>
@@ -275,9 +323,9 @@ export default function DashboardPage() {
                 <div className="w-full">
                   <div className="flex flex-col">
                     <Label className="text-[#1E1E1E] text-sm font-Nunito pb-2">
-                    About Us
-                  </Label>
-                  <Label
+                      About Us
+                    </Label>
+                    <Label
                       className="text-red-500 text-xs  font-Nunito font-bold py-3"
                       htmlFor="responsibilty"
                     >
@@ -299,9 +347,9 @@ export default function DashboardPage() {
                 <div className="w-full">
                   <div className="flex flex-col">
                     <Label className="text-[#1E1E1E] text-sm  font-Nunito pb-2">
-                    Job Responsibilities
-                  </Label>
-                  <Label
+                      Job Responsibilities
+                    </Label>
+                    <Label
                       className="text-red-500 text-xs  font-Nunito font-bold py-3"
                       htmlFor="responsibilty"
                     >

@@ -1,6 +1,6 @@
-import clientPromise from '../../lib/mongodb';
-import { NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
+import clientPromise from "../../lib/mongodb";
+import { NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
 
 export async function POST(request: Request) {
   try {
@@ -20,6 +20,7 @@ export async function POST(request: Request) {
       responsibilty,
       workType,
       Tags,
+      isVisible = true,
     } = await request.json();
 
     const result = await db.collection("jobs").insertOne({
@@ -37,12 +38,16 @@ export async function POST(request: Request) {
       responsibilty,
       workType,
       Tags,
+      isVisible,
     });
 
     return NextResponse.json({ success: true, id: result.insertedId });
   } catch (error) {
-    console.error('Error adding job:', error);
-    return NextResponse.json({ success: false, error: 'Failed to add job' }, { status: 500 });
+    console.error("Error adding job:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to add job" },
+      { status: 500 }
+    );
   }
 }
 
@@ -51,26 +56,53 @@ export async function GET(request: Request) {
     const client = await clientPromise;
     const db = client.db("career_portal");
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const id = searchParams.get("id");
 
     if (id) {
-      const job = await db.collection("jobs").findOne({ _id: new ObjectId(id) });
+      const job = await db
+        .collection("jobs")
+        .findOne({ _id: new ObjectId(id) });
       if (job) {
-        return NextResponse.json({ success: true, job: { ...job, id: job._id.toString() } });
+        return NextResponse.json({
+          success: true,
+          job: { ...job, id: job._id.toString() },
+        });
       } else {
-        return NextResponse.json({ success: false, error: 'Job not found' }, { status: 404 });
+        return NextResponse.json(
+          { success: false, error: "Job not found" },
+          { status: 404 }
+        );
       }
     } else {
-      const jobs = await db.collection("jobs").find({}).toArray();
-      const formattedJobs = jobs.map(job => ({
+      const { searchParams } = new URL(request.url);
+      const publicOnly = searchParams.get("public") === "true";
+
+      let query = {};
+      if (publicOnly) {
+        // Only show visible jobs for public career page
+        // Show jobs where isVisible is not explicitly false (includes undefined/null)
+        query = {
+          $or: [
+            { isVisible: { $ne: false } },
+            { isVisible: { $exists: false } },
+          ],
+        };
+      }
+      // If publicOnly is false (dashboard), show ALL jobs (no filter)
+
+      const jobs = await db.collection("jobs").find(query).toArray();
+      const formattedJobs = jobs.map((job) => ({
         ...job,
         id: job._id.toString(),
       }));
       return NextResponse.json({ success: true, jobs: formattedJobs });
     }
   } catch (error) {
-    console.error('Error fetching jobs:', error);
-    return NextResponse.json({ success: false, error: 'Failed to fetch jobs' }, { status: 500 });
+    console.error("Error fetching jobs:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch jobs" },
+      { status: 500 }
+    );
   }
 }
 
@@ -79,10 +111,13 @@ export async function PUT(request: Request) {
     const client = await clientPromise;
     const db = client.db("career_portal");
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json({ success: false, error: 'Job ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Job ID is required" },
+        { status: 400 }
+      );
     }
 
     const {
@@ -99,6 +134,7 @@ export async function PUT(request: Request) {
       responsibilty,
       workType,
       Tags,
+      isVisible,
     } = await request.json();
 
     const result = await db.collection("jobs").updateOne(
@@ -118,6 +154,7 @@ export async function PUT(request: Request) {
           responsibilty,
           workType,
           Tags,
+          isVisible,
         },
       }
     );
@@ -125,10 +162,16 @@ export async function PUT(request: Request) {
     if (result.modifiedCount === 1) {
       return NextResponse.json({ success: true });
     } else {
-      return NextResponse.json({ success: false, error: 'Job not found' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Job not found" },
+        { status: 404 }
+      );
     }
   } catch (error) {
-    console.error('Error editing job:', error);
-    return NextResponse.json({ success: false, error: 'Failed to edit job' }, { status: 500 });
+    console.error("Error editing job:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to edit job" },
+      { status: 500 }
+    );
   }
 }

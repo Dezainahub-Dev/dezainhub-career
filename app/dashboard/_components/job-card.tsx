@@ -18,40 +18,66 @@ interface Job {
   workType: string;
   Tags: string[];
   date: any;
+  isVisible?: boolean;
 }
 
 export function JobCard({
   job,
   onEdit,
   onDelete,
+  onToggleVisibility,
 }: {
   job: Job;
   onEdit: (job: Job) => void;
   onDelete: (id: string) => void;
+  onToggleVisibility?: (id: string, currentVisibility: boolean) => void;
 }) {
   return (
     <Card className="shadow-none border-0">
       <CardContent className="p-6">
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold font-Manrope">{job.jobTitle}</h3>
+          <h3 className="text-xl font-semibold font-Manrope">{job.jobTitle || "Untitled Job"}</h3>
 
           <div className="flex flex-wrap gap-2 font-Nunito">
             <Badge variant="outline" className="bg-white font-Manrope">
-              {job.jobType}
+              {job.jobType || "N/A"}
             </Badge>
             <Badge variant="outline" className="bg-white">
-              {job.exp}
+              {job.exp || "N/A"}
             </Badge>
             <Badge variant="outline" className="bg-white">
-              {job.workType}
+              {job.workType || "N/A"}
             </Badge>
             <Badge variant="outline" className="bg-white">
-              {job.ctc}
+              {job.ctc || "N/A"}
             </Badge>
           </div>
 
           <div className="flex items-center justify-between">
-            <p className="text-gray-700 font-Nunito"> Applicants</p>
+            <div className="flex items-center gap-4">
+              <p className="text-gray-700 font-Nunito"> Applicants</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">
+                  {job.isVisible !== false ? "Visible" : "Hidden"}
+                </span>
+                {onToggleVisibility && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      onToggleVisibility(job.id, job.isVisible !== false)
+                    }
+                    className={
+                      job.isVisible !== false
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }
+                  >
+                    {job.isVisible !== false ? "Hide" : "Show"}
+                  </Button>
+                )}
+              </div>
+            </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"

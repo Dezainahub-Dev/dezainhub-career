@@ -33,6 +33,7 @@ interface Job {
   responsibilty: string;
   workType: string;
   tags: string[];
+  isVisible?: boolean;
 }
 
 export default function PostJobPage() {
@@ -44,12 +45,14 @@ export default function PostJobPage() {
     ctc: "",
     shortDescription: "",
     positionDescription: "",
-    companyDesciption: "DezainaHub is your premier partner for innovative design and technology development. We bring ideas to life through thoughtful branding, intuitive UI/UX design, and seamless technology solutions. Whether it's crafting a brand identity that resonates or developing websites, apps, and SaaS products that perform, our work is all about creating meaningful connections. We believe in designs that tell stories and technology that makes life easier—helping businesses not just look good but work smarter.",
+    companyDesciption:
+      "DezainaHub is your premier partner for innovative design and technology development. We bring ideas to life through thoughtful branding, intuitive UI/UX design, and seamless technology solutions. Whether it's crafting a brand identity that resonates or developing websites, apps, and SaaS products that perform, our work is all about creating meaningful connections. We believe in designs that tell stories and technology that makes life easier—helping businesses not just look good but work smarter.",
     companyCulture: "",
     benefits: "",
     responsibilty: "",
     workType: "",
     tags: [],
+    isVisible: true,
   });
   const router = useRouter();
   useEffect(() => {
@@ -108,14 +111,16 @@ export default function PostJobPage() {
           ctc: "",
           shortDescription: "",
           positionDescription: "",
-          companyDesciption: "DezainaHub is your premier partner for innovative design and technology development. We bring ideas to life through thoughtful branding, intuitive UI/UX design, and seamless technology solutions. Whether it's crafting a brand identity that resonates or developing websites, apps, and SaaS products that perform, our work is all about creating meaningful connections. We believe in designs that tell stories and technology that makes life easier—helping businesses not just look good but work smarter.",
+          companyDesciption:
+            "DezainaHub is your premier partner for innovative design and technology development. We bring ideas to life through thoughtful branding, intuitive UI/UX design, and seamless technology solutions. Whether it's crafting a brand identity that resonates or developing websites, apps, and SaaS products that perform, our work is all about creating meaningful connections. We believe in designs that tell stories and technology that makes life easier—helping businesses not just look good but work smarter.",
           companyCulture: "",
           benefits: "",
           responsibilty: "",
           workType: "",
           tags: [],
+          isVisible: true,
         });
-        toast.success("New Job Posted")
+        toast.success("New Job Posted");
       } else {
         throw new Error(result.error || "Failed to add job");
       }
@@ -236,6 +241,31 @@ export default function PostJobPage() {
                 />
               </div>
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-[#1E1E1E] text-sm font-Nunito pb-2">
+                  Visibility
+                </Label>
+                <Select
+                  value={newJob.isVisible ? "visible" : "hidden"}
+                  onValueChange={(value) =>
+                    setNewJob({ ...newJob, isVisible: value === "visible" })
+                  }
+                >
+                  <SelectTrigger className="p-3 font-Nunito text-[16px] text-[#999] rounded-[8px] border border-[#ccc]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="visible">
+                      Visible on Career Page
+                    </SelectItem>
+                    <SelectItem value="hidden">
+                      Hidden from Career Page
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className=" font-Manrope text-[26px] text-black leading-[32px] font-semibold pt-6">
               About Us
             </div>
@@ -243,17 +273,17 @@ export default function PostJobPage() {
               <div className="space-y-2">
                 <div className="flex flex-col">
                   <Label
-                  className="text-[#1E1E1E] text-sm  font-Nunito"
-                  htmlFor="companyDesciption"
-                >
-                  Company Description
-                </Label>
-                <Label
-                  className="text-red-500 text-xs  font-Nunito font-bold"
-                  htmlFor="companyDesciption"
-                >
-                  (Don't Change this field unless you really want to change)
-                </Label>
+                    className="text-[#1E1E1E] text-sm  font-Nunito"
+                    htmlFor="companyDesciption"
+                  >
+                    Company Description
+                  </Label>
+                  <Label
+                    className="text-red-500 text-xs  font-Nunito font-bold"
+                    htmlFor="companyDesciption"
+                  >
+                    (Don't Change this field unless you really want to change)
+                  </Label>
                 </div>
                 <Textarea
                   id="companyDesciption"
@@ -268,29 +298,29 @@ export default function PostJobPage() {
               Job Information
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div className="space-y-2">
-    <div className="flex flex-col">
-      <Label
-        className="text-[#1E1E1E] text-sm  font-Nunito"
-        htmlFor="responsibilty"
-      >
-        Job Description
-      </Label>
-      <Label
-        className="text-red-500 text-xs  font-Nunito font-bold"
-        htmlFor="responsibilty"
-      >
-        ( use ' . ' to make sentence end and bullets point )
-      </Label>
-    </div>
-    <Textarea
-      id="responsibilty"
-      className="p-3 font-Nunito text-[16px] text-[#999] rounded-[8px] border border-[#ccc] resize-none"
-      rows={6}
-      value={newJob.responsibilty}
-      onChange={handleChange}
-    />
-  </div>
+              <div className="space-y-2">
+                <div className="flex flex-col">
+                  <Label
+                    className="text-[#1E1E1E] text-sm  font-Nunito"
+                    htmlFor="responsibilty"
+                  >
+                    Job Description
+                  </Label>
+                  <Label
+                    className="text-red-500 text-xs  font-Nunito font-bold"
+                    htmlFor="responsibilty"
+                  >
+                    ( use ' . ' to make sentence end and bullets point )
+                  </Label>
+                </div>
+                <Textarea
+                  id="responsibilty"
+                  className="p-3 font-Nunito text-[16px] text-[#999] rounded-[8px] border border-[#ccc] resize-none"
+                  rows={6}
+                  value={newJob.responsibilty}
+                  onChange={handleChange}
+                />
+              </div>
               <div className="space-y-2">
                 <div className="flex flex-col">
                   <Label
