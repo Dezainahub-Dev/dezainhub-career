@@ -7,7 +7,7 @@ export default function TeamMarquee() {
       id: 1,
       name: "Divyankit Singh",
       role: "Founder & Creative Director",
-      image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177015/Frame_1707482778_hyr47u.png",
+      image: "https://res.cloudinary.com/duidq5rn4/image/upload/v1761340043/Dezainahub%20Assets/Team/Divyankit_l73gfs.png",
     },
     {
       id: 2,
@@ -32,6 +32,18 @@ export default function TeamMarquee() {
       name: "Varidh Srivastav",
       role: "Software Engineer",
       image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177015/image_hbsxoa.png",
+    },
+    {
+      id: 5,
+      name: "Shreya Singh",
+      role: "React Native Developer",
+      image: "https://res.cloudinary.com/duidq5rn4/image/upload/v1761340045/Dezainahub%20Assets/Team/Shreya_gmkein.png",
+    },
+    {
+      id: 6,
+      name: "Jaypal Singh",
+      role: "Business Consultant",
+      image: "https://res.cloudinary.com/duidq5rn4/image/upload/v1761340044/Dezainahub%20Assets/Team/Jaipal_Singh_rkhrii.png",
     },
   ]
 
