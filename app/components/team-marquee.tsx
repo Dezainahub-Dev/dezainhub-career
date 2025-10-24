@@ -41,7 +41,7 @@ export default function TeamMarquee() {
     },
     {
       id: 6,
-      name: "Jaypal Singh",
+      name: "Jaipal Singh",
       role: "Business Consultant",
       image: "https://res.cloudinary.com/duidq5rn4/image/upload/v1761340044/Dezainahub%20Assets/Team/Jaipal_Singh_rkhrii.png",
     },

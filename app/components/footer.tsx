@@ -163,7 +163,7 @@ export default function Footer() {
             </div>
             <div className="flex flex-col gap-2 md:gap-4 font-Nunito">
               <div className="text-sm opacity-60">Our Location</div>
-              <div className="">Pune, India</div>
+              <div className="">Delhi, India</div>
             </div>
             <div className="flex flex-col gap-2 md:gap-4 font-Nunito">
               <div className="text-sm opacity-60">Contact us</div>
