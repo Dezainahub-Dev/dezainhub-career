@@ -1,5 +1,5 @@
 import React from "react";
-import { HTMLRenderer } from "../lib/html-renderer";
+import { HTMLRenderer } from "../../lib/html-renderer";
 
 interface JobCardProps {
   id: string;
