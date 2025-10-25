@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth } from '../firebase';
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "../firebase";
 import { User, onAuthStateChanged } from "firebase/auth";
-import toast from 'react-hot-toast';
-import Loader from './Loader';
+import toast from "react-hot-toast";
+import Loader from "./Loader";
+import QuillEditor from "@/components/ui/quill-editor";
 
 interface Job {
   id?: string;
@@ -26,42 +27,70 @@ interface Job {
 
 const AdminPanel: React.FC = () => {
   const [newJob, setNewJob] = useState<Job>({
-    jobTitle: '',
-    location: '',
-    exp: '',
-    jobType: '',
-    ctc: '',
-    shortDesciption: '',
-    positionDesciption: '',
-    companyDesciption: '',
-    companyCulture: '',
-    Benefits: '',
-    responsibilty: '',
-    workType: '',
-    Tags: []
+    jobTitle: "",
+    location: "",
+    exp: "",
+    jobType: "",
+    ctc: "",
+    shortDesciption: "",
+    positionDesciption: "",
+    companyDesciption: "",
+    companyCulture: "",
+    Benefits: "",
+    responsibilty: "",
+    workType: "",
+    Tags: [],
   });
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
+  // Stable callback functions for QuillEditor
+  const handleShortDescriptionChange = useCallback((value: string) => {
+    setNewJob((prev) => ({ ...prev, shortDesciption: value }));
+  }, []);
+
+  const handlePositionDescriptionChange = useCallback((value: string) => {
+    setNewJob((prev) => ({ ...prev, positionDesciption: value }));
+  }, []);
+
+  const handleCompanyDescriptionChange = useCallback((value: string) => {
+    setNewJob((prev) => ({ ...prev, companyDesciption: value }));
+  }, []);
+
+  const handleCompanyCultureChange = useCallback((value: string) => {
+    setNewJob((prev) => ({ ...prev, companyCulture: value }));
+  }, []);
+
+  const handleBenefitsChange = useCallback((value: string) => {
+    setNewJob((prev) => ({ ...prev, Benefits: value }));
+  }, []);
+
+  const handleResponsibilityChange = useCallback((value: string) => {
+    setNewJob((prev) => ({ ...prev, responsibilty: value }));
+  }, []);
+
   useEffect(() => {
     let unsubscribe: () => void;
 
-    const allowedEmails = ['varidhsrivastava19145@gmail.com', 'divyankithub@gmail.com']; // Add the new email here
+    const allowedEmails = [
+      "varidhsrivastava19145@gmail.com",
+      "divyankithub@gmail.com",
+    ]; // Add the new email here
     if (auth) {
       unsubscribe = onAuthStateChanged(auth, (currentUser) => {
         if (!currentUser) {
-          router.push('/login');
-        } else if (!allowedEmails.includes(currentUser.email || '')) {
-          router.push('/');
+          router.push("/login");
+        } else if (!allowedEmails.includes(currentUser.email || "")) {
+          router.push("/");
         } else {
           setUser(currentUser);
           setLoading(false);
         }
       });
     } else {
-      console.error('Firebase auth is not initialized');
-      router.push('/login');
+      console.error("Firebase auth is not initialized");
+      router.push("/login");
     }
 
     return () => {
@@ -69,67 +98,71 @@ const AdminPanel: React.FC = () => {
     };
   }, [router]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setNewJob(prev => ({ ...prev, [name]: value }));
+    setNewJob((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const tags = e.target.value.split(',').map(tag => tag.trim());
-    setNewJob(prev => ({ ...prev, Tags: tags }));
+    const tags = e.target.value.split(",").map((tag) => tag.trim());
+    setNewJob((prev) => ({ ...prev, Tags: tags }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/jobs', {
-        method: 'POST',
+      const response = await fetch("/api/jobs", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(newJob),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to add job');
+        throw new Error("Failed to add job");
       }
 
       const result = await response.json();
       if (result.success) {
-        toast.success('Job added successfully');
+        toast.success("Job added successfully");
         // Reset the form
         setNewJob({
-          jobTitle: '',
-          location: '',
-          exp: '',
-          jobType: '',
-          ctc: '',
-          shortDesciption: '',
-          positionDesciption: '',
-          companyDesciption: '',
-          companyCulture: '',
-          Benefits: '',
-          responsibilty: '',
-          workType: '',
-          Tags: []
+          jobTitle: "",
+          location: "",
+          exp: "",
+          jobType: "",
+          ctc: "",
+          shortDesciption: "",
+          positionDesciption: "",
+          companyDesciption: "",
+          companyCulture: "",
+          Benefits: "",
+          responsibilty: "",
+          workType: "",
+          Tags: [],
         });
       } else {
-        throw new Error(result.error || 'Failed to add job');
+        throw new Error(result.error || "Failed to add job");
       }
     } catch (error) {
       toast.error(`Failed to add job: ${error}`);
     }
   };
 
-  if (loading) return <Loader /> ;
+  if (loading) return <Loader />;
 
   return (
     <div className="max-w-4xl mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Admin Panel</h1>
-      
+
       <form onSubmit={handleSubmit} className="mb-8">
         <div className="mb-4">
-          <label htmlFor="jobTitle" className="block mb-2">Job Title</label>
+          <label htmlFor="jobTitle" className="block mb-2">
+            Job Title
+          </label>
           <input
             type="text"
             id="jobTitle"
@@ -141,7 +174,9 @@ const AdminPanel: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="location" className="block mb-2">Location</label>
+          <label htmlFor="location" className="block mb-2">
+            Location
+          </label>
           <input
             type="text"
             id="location"
@@ -153,7 +188,9 @@ const AdminPanel: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="exp" className="block mb-2">Experience</label>
+          <label htmlFor="exp" className="block mb-2">
+            Experience
+          </label>
           <input
             type="text"
             id="exp"
@@ -165,7 +202,9 @@ const AdminPanel: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="jobType" className="block mb-2">Job Type</label>
+          <label htmlFor="jobType" className="block mb-2">
+            Job Type
+          </label>
           <input
             type="text"
             id="jobType"
@@ -177,7 +216,9 @@ const AdminPanel: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="ctc" className="block mb-2">CTC</label>
+          <label htmlFor="ctc" className="block mb-2">
+            CTC
+          </label>
           <input
             type="text"
             id="ctc"
@@ -189,73 +230,75 @@ const AdminPanel: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="shortDesciption" className="block mb-2">Short Description</label>
-          <textarea
-            id="shortDesciption"
-            name="shortDesciption"
+          <label htmlFor="shortDesciption" className="block mb-2">
+            Short Description
+          </label>
+          <QuillEditor
             value={newJob.shortDesciption}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded"
-            required
+            onChange={handleShortDescriptionChange}
+            placeholder="Enter short description..."
+            height="150px"
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="positionDesciption" className="block mb-2">Position Description</label>
-          <textarea
-            id="positionDesciption"
-            name="positionDesciption"
+          <label htmlFor="positionDesciption" className="block mb-2">
+            Position Description
+          </label>
+          <QuillEditor
             value={newJob.positionDesciption}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded"
-            required
+            onChange={handlePositionDescriptionChange}
+            placeholder="Enter position description..."
+            height="200px"
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="companyDesciption" className="block mb-2">Company Description</label>
-          <textarea
-            id="companyDesciption"
-            name="companyDesciption"
+          <label htmlFor="companyDesciption" className="block mb-2">
+            Company Description
+          </label>
+          <QuillEditor
             value={newJob.companyDesciption}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded"
-            required
+            onChange={handleCompanyDescriptionChange}
+            placeholder="Enter company description..."
+            height="200px"
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="companyCulture" className="block mb-2">Company Culture</label>
-          <textarea
-            id="companyCulture"
-            name="companyCulture"
+          <label htmlFor="companyCulture" className="block mb-2">
+            Company Culture
+          </label>
+          <QuillEditor
             value={newJob.companyCulture}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded"
-            required
+            onChange={handleCompanyCultureChange}
+            placeholder="Enter company culture..."
+            height="200px"
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="Benefits" className="block mb-2">Benefits</label>
-          <textarea
-            id="Benefits"
-            name="Benefits"
+          <label htmlFor="Benefits" className="block mb-2">
+            Benefits
+          </label>
+          <QuillEditor
             value={newJob.Benefits}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded"
-            required
+            onChange={handleBenefitsChange}
+            placeholder="Enter benefits and perks..."
+            height="200px"
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="responsibilty" className="block mb-2">Responsibility</label>
-          <textarea
-            id="responsibilty"
-            name="responsibilty"
+          <label htmlFor="responsibilty" className="block mb-2">
+            Responsibility
+          </label>
+          <QuillEditor
             value={newJob.responsibilty}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded"
-            required
+            onChange={handleResponsibilityChange}
+            placeholder="Enter job responsibilities..."
+            height="200px"
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="workType" className="block mb-2">Work Type</label>
+          <label htmlFor="workType" className="block mb-2">
+            Work Type
+          </label>
           <input
             type="text"
             id="workType"
@@ -267,17 +310,22 @@ const AdminPanel: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="Tags" className="block mb-2">Tags (comma-separated)</label>
+          <label htmlFor="Tags" className="block mb-2">
+            Tags (comma-separated)
+          </label>
           <input
             type="text"
             id="Tags"
             name="Tags"
-            value={newJob.Tags.join(', ')}
+            value={newJob.Tags.join(", ")}
             onChange={handleTagsChange}
             className="w-full p-2 border rounded"
           />
         </div>
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
           Add Job
         </button>
       </form>

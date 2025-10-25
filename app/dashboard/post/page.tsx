@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import QuillEditor from "@/components/ui/quill-editor";
 import { auth } from "../../firebase";
 import { useRouter } from "next/navigation";
 import {
@@ -55,6 +56,63 @@ export default function PostJobPage() {
     isVisible: true,
   });
   const router = useRouter();
+
+  // Stable callback functions for QuillEditor
+  const handleCompanyDescriptionChange = useCallback((value: string) => {
+    setNewJob((prev) => ({ ...prev, companyDesciption: value }));
+  }, []);
+
+  const handleResponsibilityChange = useCallback((value: string) => {
+    setNewJob((prev) => ({ ...prev, responsibilty: value }));
+  }, []);
+
+  const handleBenefitsChange = useCallback((value: string) => {
+    setNewJob((prev) => ({ ...prev, benefits: value }));
+  }, []);
+
+  const trackAdminLogin = async (email: string, uid: string) => {
+    try {
+      console.log("Tracking admin login for:", email);
+
+      // Get client IP (this is a simplified approach)
+      let ipAddress = "Unknown";
+      try {
+        const response = await fetch("https://api.ipify.org?format=json");
+        const data = await response.json();
+        ipAddress = data.ip;
+        console.log("IP Address:", ipAddress);
+      } catch (ipError) {
+        console.error("Error fetching IP:", ipError);
+        ipAddress = "Unable to determine";
+      }
+
+      const loginData = {
+        email,
+        ipAddress,
+        uid,
+      };
+
+      console.log("Sending login data:", loginData);
+
+      const response = await fetch("/api/admin-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginData),
+      });
+
+      if (response.ok) {
+        console.log("Login tracking successful");
+      } else {
+        const errorData = await response.json();
+        console.error("Login tracking failed:", errorData);
+      }
+    } catch (error) {
+      console.error("Error tracking admin login:", error);
+    }
+  };
+
   useEffect(() => {
     if (!auth) {
       console.error("Firebase auth is not initialized");
@@ -69,6 +127,9 @@ export default function PostJobPage() {
     const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
       if (!user || !allowedEmails.includes(user.email || "")) {
         router.push("/");
+      } else {
+        // Track admin login
+        trackAdminLogin(user.email || "", user.uid);
       }
     });
 
@@ -285,12 +346,11 @@ export default function PostJobPage() {
                     (Don't Change this field unless you really want to change)
                   </Label>
                 </div>
-                <Textarea
-                  id="companyDesciption"
-                  className="p-3 font-Nunito text-[16px] text-[#999] rounded-[8px] border border-[#ccc] resize-none"
-                  rows={6}
+                <QuillEditor
                   value={newJob.companyDesciption}
-                  onChange={handleChange}
+                  onChange={handleCompanyDescriptionChange}
+                  placeholder="Enter company description..."
+                  height="200px"
                 />
               </div>
             </div>
@@ -313,12 +373,11 @@ export default function PostJobPage() {
                     ( use ' . ' to make sentence end and bullets point )
                   </Label>
                 </div>
-                <Textarea
-                  id="responsibilty"
-                  className="p-3 font-Nunito text-[16px] text-[#999] rounded-[8px] border border-[#ccc] resize-none"
-                  rows={6}
+                <QuillEditor
                   value={newJob.responsibilty}
-                  onChange={handleChange}
+                  onChange={handleResponsibilityChange}
+                  placeholder="Enter job description and responsibilities..."
+                  height="200px"
                 />
               </div>
               <div className="space-y-2">
@@ -336,13 +395,11 @@ export default function PostJobPage() {
                     ( use ' . ' to make sentence end and bullets point )
                   </Label>
                 </div>
-                <Textarea
-                  className="p-3 font-Nunito text-[16px] text-[#999] rounded-[8px] border border-[#ccc] resize-none"
-                  id="benefits"
-                  placeholder="e.g. Health insurance, flexible hours, remote work..."
-                  rows={6}
+                <QuillEditor
                   value={newJob.benefits}
-                  onChange={handleChange}
+                  onChange={handleBenefitsChange}
+                  placeholder="Enter benefits and perks..."
+                  height="200px"
                 />
               </div>
             </div>

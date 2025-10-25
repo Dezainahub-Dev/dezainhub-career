@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { useCallback } from "react";
 import { Toast as toast2 } from "react-hot-toast";
+import { HTMLRenderer, htmlContentStyles } from "../../../lib/html-renderer";
 
 const JobDescriptionPage: React.FC = () => {
   const router = useRouter();
@@ -91,57 +92,62 @@ const JobDescriptionPage: React.FC = () => {
     setFile(null);
   }, []);
 
-const handleFileUpload = useCallback(
-  async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const uploadedFile = e.target.files?.[0];
-    if (!uploadedFile) return;
+  const handleFileUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const uploadedFile = e.target.files?.[0];
+      if (!uploadedFile) return;
 
-    // Validate file size and type first
-    if (uploadedFile.size > 5 * 1024 * 1024) {
-      return toast.error("File size exceeds 5MB limit.");
-    }
-    if (uploadedFile.type !== "application/pdf") {
-      return toast.error("Please upload a PDF file");
-    }
-
-    setTimeout(() => {
-      setFile(uploadedFile);
-    }, 1500);
-
-    try {
-      console.log("Uploading file:", uploadedFile);
-      console.log("Using preset:", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
-      console.log("Cloudinary cloud name:", process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME);
-
-      const uploadData = new FormData();
-      uploadData.append("file", uploadedFile);
-      uploadData.append("upload_preset", "varidh");
-
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`,
-        {
-          method: "POST",
-          body: uploadData,
-        }
-      );
-
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Upload failed: ${errText}`);
+      // Validate file size and type first
+      if (uploadedFile.size > 5 * 1024 * 1024) {
+        return toast.error("File size exceeds 5MB limit.");
+      }
+      if (uploadedFile.type !== "application/pdf") {
+        return toast.error("Please upload a PDF file");
       }
 
-      const data = await response.json();
-      console.log("Cloudinary response:", data);
-      setFormData((prev) => ({ ...prev, resumeUrl: data.secure_url }));
-      toast.success("Resume uploaded successfully!");
-    } catch (error) {
-      console.error("Cloudinary Upload Error:", error);
-      toast.error("Failed to upload resume. Please try again.");
-    }
-  },
-  []
-);
+      setTimeout(() => {
+        setFile(uploadedFile);
+      }, 1500);
 
+      try {
+        console.log("Uploading file:", uploadedFile);
+        console.log(
+          "Using preset:",
+          process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+        );
+        console.log(
+          "Cloudinary cloud name:",
+          process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+        );
+
+        const uploadData = new FormData();
+        uploadData.append("file", uploadedFile);
+        uploadData.append("upload_preset", "varidh");
+
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`,
+          {
+            method: "POST",
+            body: uploadData,
+          }
+        );
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Upload failed: ${errText}`);
+        }
+
+        const data = await response.json();
+        console.log("Cloudinary response:", data);
+        setFormData((prev) => ({ ...prev, resumeUrl: data.secure_url }));
+        toast.success("Resume uploaded successfully!");
+      } catch (error) {
+        console.error("Cloudinary Upload Error:", error);
+        toast.error("Failed to upload resume. Please try again.");
+      }
+    },
+    []
+  );
 
   const handleSubmit = useCallback(
     async (
@@ -161,17 +167,17 @@ const handleFileUpload = useCallback(
         const jobId = window.location.pathname.split("/").pop();
 
         const evaluationResponse = await fetch("/api/candidate-evaluation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          jobId
-        }),
-      });
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...formData,
+            jobId,
+          }),
+        });
 
-      if (!evaluationResponse.ok) {
-        console.error("Evaluation process failed");
-      }
+        if (!evaluationResponse.ok) {
+          console.error("Evaluation process failed");
+        }
 
         toast.success("Application submitted successfully!", {
           duration: 2000,
@@ -253,6 +259,7 @@ const handleFileUpload = useCallback(
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: htmlContentStyles }} />
       <div className="flex flex-col min-h-screen bg-[#02141a]">
         {/* Navbar */}
         <header className="w-full fixed top-0 left-0 right-0 z-50 bg-[#02141a] px-5">
@@ -346,48 +353,30 @@ const handleFileUpload = useCallback(
                 <h2 className="text-[28px] md:text-[40px] leading-[36px] md:leading-[52px] font-semibold font-Manrope text-white">
                   About Us
                 </h2>
-                <p className="text-white font-Nunito text-[16px] md:text-[20px] leading-[24px] md:leading-[32px] font-normal">
-                  {job.companyDesciption}
-                </p>
+                <HTMLRenderer
+                  content={job.companyDesciption || ""}
+                  className="text-white font-Nunito text-[16px] md:text-[20px] leading-[24px] md:leading-[32px] font-normal"
+                />
               </div>
               {/* Job Description */}
               <section className="mb-12 flex flex-col gap-4">
                 <h2 className="text-[28px] md:text-[40px] leading-[36px] font-semibold font-Manrope text-white">
                   Job Description
                 </h2>
-                <div className="list-decimal text-white font-Nunito text-[20px] leading-[32px] font-normal">
-                  <ol className="list-decimal pl-5">
-                    {(job.responsibilty || "")
-                      .split(".")
-                      .filter((item: string) => item.trim())
-                      .map((item: string, index: number) => (
-                        <li
-                          key={index}
-                          className="md:mb-2 text-[16px] md:text-[20px] leading-[24px] md:leading-[32px] font-normal font-Nunito"
-                        >
-                          {item.trim()}
-                        </li>
-                      ))}
-                  </ol>
-                </div>
+                <HTMLRenderer
+                  content={job.responsibilty || ""}
+                  className="text-white font-Nunito text-[20px] leading-[32px] font-normal"
+                />
               </section>
               {/* Benefits */}
               <section className="mb-8 flex flex-col gap-4">
                 <h2 className="text-[28px] md:text-[40px] leading-[36px] font-semibold font-Manrope text-white">
                   Benefits
                 </h2>
-                <ol className="list-decimal pl-5">
-                  {(job.Benefits || "").split(".")
-                    .filter((benefit: string) => benefit.trim())
-                    .map((benefit: string, index: number) => (
-                      <li
-                        key={index}
-                        className="md:mb-2 text-[16px] md:text-[20px] leading-[24px] md:leading-[32px] font-normal font-Nunito"
-                      >
-                        {benefit.trim()}
-                      </li>
-                    ))}
-                </ol>
+                <HTMLRenderer
+                  content={job.Benefits || ""}
+                  className="text-white font-Nunito text-[20px] leading-[32px] font-normal"
+                />
               </section>
               {/* Form */}
               {user ? (
@@ -441,7 +430,7 @@ const handleFileUpload = useCallback(
                             name="jobTitle"
                             value={formData.jobTitle}
                             disabled
-                            placeholder="Job Title" 
+                            placeholder="Job Title"
                             className="w-full cursor-not-allowed pb-3 bg-transparent border-b border-hero_section_border text-text_gray font-Nunito focus:outline-none"
                           />
                         </div>

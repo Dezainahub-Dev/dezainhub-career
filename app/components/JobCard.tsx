@@ -1,4 +1,5 @@
-import React from 'react';
+import React from "react";
+import { HTMLRenderer } from "../lib/html-renderer";
 
 interface JobCardProps {
   id: string;
@@ -11,20 +12,23 @@ interface JobCardProps {
   shortDesciption: string;
 }
 
-const JobCard: React.FC<JobCardProps> = ({ 
-  id, 
-  jobTitle, 
-  location, 
-  date, 
-  exp, 
-  jobType, 
-  ctc, 
-  shortDesciption 
+const JobCard: React.FC<JobCardProps> = ({
+  id,
+  jobTitle,
+  location,
+  date,
+  exp,
+  jobType,
+  ctc,
+  shortDesciption,
 }) => {
   return (
     <div className="border p-4 rounded-lg shadow-lg bg-white hover:shadow-2xl transition-shadow cursor-pointer">
       <h2 className="text-2xl font-semibold mb-2">{jobTitle}</h2>
-      <p className="text-gray-600 mb-2">{shortDesciption}</p>
+      <HTMLRenderer
+        content={shortDesciption || ""}
+        className="text-gray-600 mb-2"
+      />
       <div className="flex justify-between text-sm text-gray-500 mb-2">
         <span>{location}</span>
         <span>{date}</span>

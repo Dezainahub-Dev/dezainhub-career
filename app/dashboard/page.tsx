@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { auth } from "../firebase";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -9,6 +9,7 @@ import { ArrowDownIcon, Users, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { Textarea } from "@/components/ui/textarea";
+import QuillEditor from "@/components/ui/quill-editor";
 import {
   Dialog,
   DialogContent,
@@ -52,6 +53,62 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [editJob, setEditJob] = useState<Job | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+
+  // Stable callback functions for QuillEditor
+  const handleCompanyDescriptionChange = useCallback((value: string) => {
+    setEditJob((prev) => (prev ? { ...prev, companyDesciption: value } : null));
+  }, []);
+
+  const handleResponsibilityChange = useCallback((value: string) => {
+    setEditJob((prev) => (prev ? { ...prev, responsibilty: value } : null));
+  }, []);
+
+  const handleBenefitsChange = useCallback((value: string) => {
+    setEditJob((prev) => (prev ? { ...prev, Benefits: value } : null));
+  }, []);
+
+  const trackAdminLogin = async (email: string, uid: string) => {
+    try {
+      console.log("Tracking admin login for:", email);
+
+      // Get client IP (this is a simplified approach)
+      let ipAddress = "Unknown";
+      try {
+        const response = await fetch("https://api.ipify.org?format=json");
+        const data = await response.json();
+        ipAddress = data.ip;
+        console.log("IP Address:", ipAddress);
+      } catch (ipError) {
+        console.error("Error fetching IP:", ipError);
+        ipAddress = "Unable to determine";
+      }
+
+      const loginData = {
+        email,
+        ipAddress,
+        uid,
+      };
+
+      console.log("Sending login data:", loginData);
+
+      const response = await fetch("/api/admin-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginData),
+      });
+
+      if (response.ok) {
+        console.log("Login tracking successful");
+      } else {
+        const errorData = await response.json();
+        console.error("Login tracking failed:", errorData);
+      }
+    } catch (error) {
+      console.error("Error tracking admin login:", error);
+    }
+  };
   const router = useRouter();
   useEffect(() => {
     if (!auth) {
@@ -67,6 +124,9 @@ export default function DashboardPage() {
     const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
       if (!user || !allowedEmails.includes(user.email || "")) {
         router.push("/");
+      } else {
+        // Track admin login
+        trackAdminLogin(user.email || "", user.uid);
       }
     });
 
@@ -332,16 +392,11 @@ export default function DashboardPage() {
                       ( Default template don't change unless it's old )
                     </Label>
                   </div>
-                  <Textarea
-                    rows={6}
+                  <QuillEditor
                     value={editJob.companyDesciption || ""}
-                    onChange={(e) =>
-                      setEditJob({
-                        ...editJob,
-                        companyDesciption: e.target.value,
-                      })
-                    }
-                    className="text-black resize-none h-72"
+                    onChange={handleCompanyDescriptionChange}
+                    placeholder="Enter company description..."
+                    height="200px"
                   />
                 </div>
                 <div className="w-full">
@@ -356,16 +411,11 @@ export default function DashboardPage() {
                       ( use ' . ' to make sentence end and bullets point )
                     </Label>
                   </div>
-                  <Textarea
+                  <QuillEditor
                     value={editJob.responsibilty || ""}
-                    rows={6}
-                    onChange={(e) =>
-                      setEditJob({
-                        ...editJob,
-                        responsibilty: e.target.value,
-                      })
-                    }
-                    className="text-black resize-none h-72"
+                    onChange={handleResponsibilityChange}
+                    placeholder="Enter job responsibilities..."
+                    height="200px"
                   />
                 </div>
               </div>
@@ -382,16 +432,11 @@ export default function DashboardPage() {
                       ( use ' . ' to make sentence end and bullets point )
                     </Label>
                   </div>
-                  <Textarea
-                    rows={6}
+                  <QuillEditor
                     value={editJob.Benefits || ""}
-                    onChange={(e) =>
-                      setEditJob({
-                        ...editJob,
-                        Benefits: e.target.value,
-                      })
-                    }
-                    className="text-black resize-none h-72"
+                    onChange={handleBenefitsChange}
+                    placeholder="Enter benefits and perks..."
+                    height="200px"
                   />
                 </div>
               </div>
