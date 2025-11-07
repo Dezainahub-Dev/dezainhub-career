@@ -53,6 +53,10 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [editJob, setEditJob] = useState<Job | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const [jobToEdit, setJobToEdit] = useState<Job | null>(null);
 
   // Stable callback functions for QuillEditor
   const handleCompanyDescriptionChange = useCallback((value: string) => {
@@ -69,17 +73,13 @@ export default function DashboardPage() {
 
   const trackAdminLogin = async (email: string, uid: string) => {
     try {
-      console.log("Tracking admin login for:", email);
-
       // Get client IP (this is a simplified approach)
       let ipAddress = "Unknown";
       try {
         const response = await fetch("https://api.ipify.org?format=json");
         const data = await response.json();
         ipAddress = data.ip;
-        console.log("IP Address:", ipAddress);
       } catch (ipError) {
-        console.error("Error fetching IP:", ipError);
         ipAddress = "Unable to determine";
       }
 
@@ -89,8 +89,6 @@ export default function DashboardPage() {
         uid,
       };
 
-      console.log("Sending login data:", loginData);
-
       const response = await fetch("/api/admin-login", {
         method: "POST",
         headers: {
@@ -98,21 +96,13 @@ export default function DashboardPage() {
         },
         body: JSON.stringify(loginData),
       });
-
-      if (response.ok) {
-        console.log("Login tracking successful");
-      } else {
-        const errorData = await response.json();
-        console.error("Login tracking failed:", errorData);
-      }
     } catch (error) {
-      console.error("Error tracking admin login:", error);
+      // Error tracking admin login
     }
   };
   const router = useRouter();
   useEffect(() => {
     if (!auth) {
-      console.error("Firebase auth is not initialized");
       router.push("/");
       return;
     }
@@ -138,7 +128,7 @@ export default function DashboardPage() {
         const response = await axios.get("/api/applications");
         setApplicationCount(response.data.length);
       } catch (error) {
-        console.error("Error fetching applications:", error);
+        // Error fetching applications
       } finally {
         setLoading(false);
       }
@@ -157,7 +147,6 @@ export default function DashboardPage() {
           setJobs([]);
         }
       } catch (error) {
-        console.error("Error fetching jobs:", error);
         setJobs([]);
       } finally {
         setLoading(false);
@@ -166,18 +155,37 @@ export default function DashboardPage() {
     fetchJobs();
   }, []);
 
-  const handleDelete = async (id: string) => {
+  const confirmDelete = (id: string) => {
+    setJobToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const handleDelete = async () => {
+    if (!jobToDelete) return;
+    
     try {
-      await axios.delete(`/api/jobs/${id}`);
-      setJobs(jobs.filter((job) => job.id !== id));
+      await axios.delete(`/api/jobs/${jobToDelete}`);
+      setJobs(jobs.filter((job) => job.id !== jobToDelete));
+      setShowDeleteModal(false);
+      setJobToDelete(null);
     } catch (error) {
-      console.error("Error deleting job:", error);
+      setShowDeleteModal(false);
+      setJobToDelete(null);
     }
   };
 
-  const handleEdit = (job: Job) => {
-    setEditJob(job);
-    setModalOpen(true);
+  const confirmEdit = (job: Job) => {
+    setJobToEdit(job);
+    setShowEditModal(true);
+  };
+
+  const handleEdit = () => {
+    if (jobToEdit) {
+      setEditJob(jobToEdit);
+      setModalOpen(true);
+      setShowEditModal(false);
+      setJobToEdit(null);
+    }
   };
 
   const handleSave = async () => {
@@ -203,10 +211,9 @@ export default function DashboardPage() {
       if (response.data.success) {
         setJobs(jobs.map((job) => (job.id === editJob.id ? editJob : job)));
         setModalOpen(false);
-        console.log("Job updated successfully");
       }
     } catch (error) {
-      console.error("Error updating job:", error);
+      // Error updating job
     }
   };
 
@@ -225,10 +232,9 @@ export default function DashboardPage() {
             job.id === jobId ? { ...job, isVisible: !currentVisibility } : job
           )
         );
-        console.log("Job visibility updated successfully");
       }
     } catch (error) {
-      console.error("Error updating job visibility:", error);
+      // Error updating job visibility
     }
   };
   if (loading) return <p>Loading jobs...</p>;
@@ -262,8 +268,8 @@ export default function DashboardPage() {
             <JobCard
               key={job.id}
               job={job}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
+              onEdit={confirmEdit}
+              onDelete={confirmDelete}
               onToggleVisibility={handleToggleVisibility}
             />
           ))
@@ -446,6 +452,66 @@ export default function DashboardPage() {
                 Cancel
               </Button>
               <Button onClick={handleSave}>Save</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {showDeleteModal && (
+        <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-black">Confirm Deletion</DialogTitle>
+            </DialogHeader>
+            <p className="py-4 text-black">
+              Are you sure you want to delete this job? This action cannot be undone.
+            </p>
+            <DialogFooter>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setJobToDelete(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {showEditModal && (
+        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-black">Confirm Edit</DialogTitle>
+            </DialogHeader>
+            <p className="py-4 text-black">
+              Are you sure you want to edit this job? The edit form will open.
+            </p>
+            <DialogFooter>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowEditModal(false);
+                  setJobToEdit(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleEdit}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                Edit
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
