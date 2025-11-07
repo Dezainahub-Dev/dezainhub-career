@@ -41,10 +41,9 @@ const JobDescriptionPage: React.FC = () => {
   const [isEmailTaken, setIsEmailTaken] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    console.log("isEmailTaken state updated:", isEmailTaken);
-  }, [isEmailTaken]);
+  const [fieldErrors, setFieldErrors] = useState<{
+    [key: string]: string;
+  }>({});
 
   const checkExistingApplication = useCallback(async (email: string) => {
     try {
@@ -58,7 +57,7 @@ const JobDescriptionPage: React.FC = () => {
       if (data.exists)
         toast.error("You have already applied for this position.");
     } catch (error) {
-      console.error("Error checking existing application:", error);
+      // Error checking existing application
     }
   }, []);
 
@@ -80,8 +79,16 @@ const JobDescriptionPage: React.FC = () => {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
       setFormData((prev) => ({ ...prev, [name]: value }));
+      // Clear error when user starts typing
+      if (fieldErrors[name]) {
+        setFieldErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[name];
+          return newErrors;
+        });
+      }
     },
-    []
+    [fieldErrors]
   );
 
   const handleSelection = useCallback((field: string, value: string) => {
@@ -90,7 +97,16 @@ const JobDescriptionPage: React.FC = () => {
 
   const handleRemoveFile = useCallback(() => {
     setFile(null);
-  }, []);
+    setFormData((prev) => ({ ...prev, resumeUrl: "" }));
+    // Clear resume error if exists
+    if (fieldErrors.resumeUrl) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.resumeUrl;
+        return newErrors;
+      });
+    }
+  }, [fieldErrors]);
 
   const handleFileUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,16 +126,6 @@ const JobDescriptionPage: React.FC = () => {
       }, 1500);
 
       try {
-        console.log("Uploading file:", uploadedFile);
-        console.log(
-          "Using preset:",
-          process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-        );
-        console.log(
-          "Cloudinary cloud name:",
-          process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-        );
-
         const uploadData = new FormData();
         uploadData.append("file", uploadedFile);
         uploadData.append("upload_preset", "varidh");
@@ -138,22 +144,90 @@ const JobDescriptionPage: React.FC = () => {
         }
 
         const data = await response.json();
-        console.log("Cloudinary response:", data);
         setFormData((prev) => ({ ...prev, resumeUrl: data.secure_url }));
+        // Clear resume error if exists
+        if (fieldErrors.resumeUrl) {
+          setFieldErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors.resumeUrl;
+            return newErrors;
+          });
+        }
         toast.success("Resume uploaded successfully!");
       } catch (error) {
-        console.error("Cloudinary Upload Error:", error);
         toast.error("Failed to upload resume. Please try again.");
       }
     },
-    []
+    [fieldErrors]
   );
+
+  const validateForm = useCallback(() => {
+    const errors: { [key: string]: string } = {};
+
+    // Validate name
+    if (!formData.name.trim()) {
+      errors.name = "Full name is required";
+    } else if (formData.name.trim().length < 2) {
+      errors.name = "Name must be at least 2 characters";
+    }
+
+    // Validate email
+    if (!formData.email.trim()) {
+      errors.email = "Email is required";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        errors.email = "Please enter a valid email address";
+      }
+    }
+
+    // Validate phone number
+    if (!formData.phoneNumber.trim()) {
+      errors.phoneNumber = "Phone number is required";
+    } else {
+      const phoneRegex = /^[6-9]\d{9}$/;
+      const cleanedPhone = formData.phoneNumber.replace(/\D/g, "");
+      if (!phoneRegex.test(cleanedPhone) || cleanedPhone.length !== 10) {
+        errors.phoneNumber =
+          "Please enter a valid 10-digit Indian phone number";
+      }
+    }
+
+    // Validate portfolio (optional but must be valid URL if provided)
+    if (formData.portfolio.trim()) {
+      try {
+        new URL(formData.portfolio);
+      } catch {
+        errors.portfolio = "Please enter a valid URL";
+      }
+    }
+
+    // Validate experience
+    if (!formData.experience.trim()) {
+      errors.experience = "Experience is required";
+    }
+
+    // Validate resume
+    if (!formData.resumeUrl && !file) {
+      errors.resumeUrl = "Resume is required";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  }, [formData, file]);
 
   const handleSubmit = useCallback(
     async (
       e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
     ) => {
       e.preventDefault();
+
+      // Validate form before submission
+      if (!validateForm()) {
+        toast.error("Please fill in all required fields correctly");
+        return;
+      }
+
       setIsLoading(true);
       try {
         const response = await fetch("/api/applications", {
@@ -176,7 +250,7 @@ const JobDescriptionPage: React.FC = () => {
         });
 
         if (!evaluationResponse.ok) {
-          console.error("Evaluation process failed");
+          // Evaluation process failed
         }
 
         toast.success("Application submitted successfully!", {
@@ -195,8 +269,7 @@ const JobDescriptionPage: React.FC = () => {
               }),
             });
           } catch (error) {
-            console.error("Error sending confirmation email:", error);
-            // Don't show error to user since main operation succeeded
+            // Error sending confirmation email
           }
         }, 120000); // 2 minutes in milliseconds
 
@@ -210,8 +283,9 @@ const JobDescriptionPage: React.FC = () => {
           experience: "",
           resumeUrl: "",
         });
+        setFieldErrors({});
+        setFile(null);
       } catch (error) {
-        console.error("Error submitting application:", error);
         toast.error("Failed to submit application. Please try again.", {
           duration: 2000,
         });
@@ -219,7 +293,7 @@ const JobDescriptionPage: React.FC = () => {
         setIsLoading(false);
       }
     },
-    [formData, router]
+    [formData, router, validateForm]
   );
 
   useEffect(() => {
@@ -398,8 +472,17 @@ const JobDescriptionPage: React.FC = () => {
                             value={formData.name}
                             onChange={handleInputChange}
                             placeholder="Full name"
-                            className="w-full pb-3 bg-transparent border-b border-hero_section_border text-text_gray font-Nunito focus:outline-none"
+                            className={`w-full pb-3 bg-transparent border-b ${
+                              fieldErrors.name
+                                ? "border-red-500"
+                                : "border-hero_section_border"
+                            } text-text_gray font-Nunito focus:outline-none`}
                           />
+                          {fieldErrors.name && (
+                            <p className="mt-1 text-sm text-red-500 font-Nunito">
+                              {fieldErrors.name}
+                            </p>
+                          )}
                         </div>
                         <div>
                           <input
@@ -408,21 +491,43 @@ const JobDescriptionPage: React.FC = () => {
                             value={formData.email}
                             onChange={handleInputChange}
                             placeholder="Email"
-                            className="w-full pb-3 bg-transparent border-b border-hero_section_border text-text_gray font-Nunito focus:outline-none"
+                            className={`w-full pb-3 bg-transparent border-b ${
+                              fieldErrors.email
+                                ? "border-red-500"
+                                : "border-hero_section_border"
+                            } text-text_gray font-Nunito focus:outline-none`}
                           />
+                          {fieldErrors.email && (
+                            <p className="mt-1 text-sm text-red-500 font-Nunito">
+                              {fieldErrors.email}
+                            </p>
+                          )}
                         </div>
-                        <div className="flex border-b border-hero_section_border">
-                          <span className="text-text_gray font-Nunito mr-2 flex gap-2">
-                            <div className="">🇮🇳</div>+91
-                          </span>
-                          <input
-                            type="tel"
-                            name="phoneNumber"
-                            value={`${formData.phoneNumber}`}
-                            onChange={handleInputChange}
-                            placeholder="Phone number"
-                            className="w-full pb-3 bg-transparent  text-text_gray font-Nunito focus:outline-none"
-                          />
+                        <div>
+                          <div
+                            className={`flex border-b ${
+                              fieldErrors.phoneNumber
+                                ? "border-red-500"
+                                : "border-hero_section_border"
+                            }`}
+                          >
+                            <span className="text-text_gray font-Nunito mr-2 flex gap-2">
+                              <div className="">🇮🇳</div>+91
+                            </span>
+                            <input
+                              type="tel"
+                              name="phoneNumber"
+                              value={`${formData.phoneNumber}`}
+                              onChange={handleInputChange}
+                              placeholder="Phone number"
+                              className="w-full pb-3 bg-transparent text-text_gray font-Nunito focus:outline-none"
+                            />
+                          </div>
+                          {fieldErrors.phoneNumber && (
+                            <p className="mt-1 text-sm text-red-500 font-Nunito">
+                              {fieldErrors.phoneNumber}
+                            </p>
+                          )}
                         </div>
                         <div>
                           <input
@@ -444,8 +549,17 @@ const JobDescriptionPage: React.FC = () => {
                             value={formData.portfolio}
                             onChange={handleInputChange}
                             placeholder="Portfolio Link"
-                            className="w-full pb-3 bg-transparent border-b border-hero_section_border text-text_gray font-Nunito focus:outline-none"
+                            className={`w-full pb-3 bg-transparent border-b ${
+                              fieldErrors.portfolio
+                                ? "border-red-500"
+                                : "border-hero_section_border"
+                            } text-text_gray font-Nunito focus:outline-none`}
                           />
+                          {fieldErrors.portfolio && (
+                            <p className="mt-1 text-sm text-red-500 font-Nunito">
+                              {fieldErrors.portfolio}
+                            </p>
+                          )}
                         </div>
                         <div>
                           <input
@@ -454,8 +568,17 @@ const JobDescriptionPage: React.FC = () => {
                             value={formData.experience}
                             onChange={handleInputChange}
                             placeholder="Experience"
-                            className="w-full pb-3 bg-transparent border-b border-hero_section_border text-text_gray font-Nunito focus:outline-none"
+                            className={`w-full pb-3 bg-transparent border-b ${
+                              fieldErrors.experience
+                                ? "border-red-500"
+                                : "border-hero_section_border"
+                            } text-text_gray font-Nunito focus:outline-none`}
                           />
+                          {fieldErrors.experience && (
+                            <p className="mt-1 text-sm text-red-500 font-Nunito">
+                              {fieldErrors.experience}
+                            </p>
+                          )}
                         </div>
                         <div className="text-[26px] font-Manrope font-semibold">
                           Resume or CV
@@ -464,7 +587,18 @@ const JobDescriptionPage: React.FC = () => {
                           Kindly Attach your resume below. (File size up to
                           5MB.)
                         </div>
-                        <div className="font-Nunito flex gap-2 max-w-[200px] items-center justify-between px-4 py-2 border border-white rounded-full cursor-pointer relative">
+                        {fieldErrors.resumeUrl && (
+                          <p className="mt-1 text-sm text-red-500 font-Nunito">
+                            {fieldErrors.resumeUrl}
+                          </p>
+                        )}
+                        <div
+                          className={`font-Nunito flex gap-2 max-w-[200px] items-center justify-between px-4 py-2 border ${
+                            fieldErrors.resumeUrl
+                              ? "border-red-500"
+                              : "border-white"
+                          } rounded-full cursor-pointer relative`}
+                        >
                           <input
                             type="file"
                             name="resumeUrl"
