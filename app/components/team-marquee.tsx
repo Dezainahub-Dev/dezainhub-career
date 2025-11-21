@@ -19,7 +19,7 @@ export default function TeamMarquee() {
       id: 3,
       name: "Minesh Patel",
       role: "Software Engineer",
-      image: " https://res.cloudinary.com/duidq5rn4/image/upload/v1763744644/Dezainahub%20Assets/Team/Minesh_fcom98.png",
+      image: "https://res.cloudinary.com/duidq5rn4/image/upload/v1763744644/Dezainahub%20Assets/Team/Minesh_fcom98.png",
     },
     {
       id: 4,
