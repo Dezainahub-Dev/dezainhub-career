@@ -15,17 +15,11 @@ export default function TeamMarquee() {
       role: "Lead Designer",
       image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177016/Frame_1707482778-2_ubz9vy.png",
     },
-    // {
-    //   id: 3,
-    //   name: "Sourav Kumar",
-    //   role: "Senior Software Engineer",
-    //   image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177016/Frame_1707482778-1_jj6lrq.png",
-    // },
     {
       id: 3,
       name: "Minesh Patel",
       role: "Software Engineer",
-      image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177015/Frame_1707482779_tprr3p.png",
+      image: " https://res.cloudinary.com/duidq5rn4/image/upload/v1763744644/Dezainahub%20Assets/Team/Minesh_fcom98.png",
     },
     {
       id: 4,
@@ -44,6 +38,19 @@ export default function TeamMarquee() {
       name: "Jaipal Singh",
       role: "Business Consultant",
       image: "https://res.cloudinary.com/duidq5rn4/image/upload/v1761340044/Dezainahub%20Assets/Team/Jaipal_Singh_rkhrii.png",
+    },
+    {
+      id: 7,
+      name: "Alfi Khatoon",
+      role: "Social Media Executive",
+      image: "https://res.cloudinary.com/duidq5rn4/image/upload/v1763744519/Dezainahub%20Assets/Team/Alfi_vun2f2.png",
+    },
+
+      {
+        id: 8,
+      name: "Harsha Thethi",
+      role: "Human Resource",
+      image: "https://res.cloudinary.com/duidq5rn4/image/upload/v1763744517/Dezainahub%20Assets/Team/Harsha_w55ksl.png",
     },
   ]
 
