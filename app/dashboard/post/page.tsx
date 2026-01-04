@@ -266,6 +266,7 @@ export default function PostJobPage() {
                     <SelectItem value="full-time">Full Time</SelectItem>
                     <SelectItem value="part-time">Part Time</SelectItem>
                     <SelectItem value="contract">Contract</SelectItem>
+                    <SelectItem value="internship">Internship</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
