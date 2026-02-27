@@ -41,17 +41,32 @@ export async function POST(request: NextRequest) {
       status: "Pending",
     });
 
+    const adminRecipients = Array.from(
+      new Set(
+        `${process.env.ADMIN_EMAIL || ""},${process.env.SMTP_USER || ""},varidhsrivastava19145@gmail.com`
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean)
+      )
+    );
+
     // Send confirmation email to applicant
     try {
       const confirmationEmail = generateApplicationConfirmationEmail(
         name,
         jobTitle
       );
-      await sendEmail({
+      const confirmationResult = await sendEmail({
         to: email,
         subject: confirmationEmail.subject,
         html: confirmationEmail.html,
       });
+      if (!confirmationResult.success) {
+        console.error(
+          "Applicant confirmation email failed:",
+          confirmationResult.error
+        );
+      }
     } catch (emailError) {
       console.error("Error sending confirmation email:", emailError);
     }
@@ -64,11 +79,14 @@ export async function POST(request: NextRequest) {
         email,
         phoneNumber
       );
-      await sendEmail({
-        to: process.env.ADMIN_EMAIL || "varidhsrivastava19145@gmail.com",
+      const adminResult = await sendEmail({
+        to: adminRecipients.join(","),
         subject: adminEmail.subject,
         html: adminEmail.html,
       });
+      if (!adminResult.success) {
+        console.error("Admin notification email failed:", adminResult.error);
+      }
     } catch (emailError) {
       console.error("Error sending admin notification email:", emailError);
     }

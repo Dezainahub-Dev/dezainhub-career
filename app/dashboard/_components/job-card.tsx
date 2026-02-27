@@ -26,14 +26,20 @@ export function JobCard({
   onEdit,
   onDelete,
   onToggleVisibility,
+  muted = false,
 }: {
   job: Job;
   onEdit: (job: Job) => void;
   onDelete: (id: string) => void;
   onToggleVisibility?: (id: string, currentVisibility: boolean) => void;
+  muted?: boolean;
 }) {
   return (
-    <Card className="shadow-none border-0">
+    <Card
+      className={`shadow-none border-0 transition-opacity ${
+        muted ? "opacity-60" : "opacity-100"
+      }`}
+    >
       <CardContent className="p-6">
         <div className="space-y-4">
           <h3 className="text-xl font-semibold font-Manrope">{job.jobTitle || "Untitled Job"}</h3>

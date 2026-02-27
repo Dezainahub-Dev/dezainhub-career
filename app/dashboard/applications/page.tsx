@@ -1,17 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowDownIcon, Users, UserPlus, Clock, Cross } from "lucide-react";
-import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Check,
-  Search,
-  Filter,
-  SortAsc,
-  SortDesc,
-} from "lucide-react";
+import { ArrowDownIcon, Users, Clock, Cross, ChevronDown, Search, Copy } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -21,15 +11,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
@@ -46,19 +33,19 @@ interface Applicant {
   resumeUrl: string;
   jobTitle: string;
   experience: string;
-  submittedAt: string;
+  submittedAt?: string;
   status: string;
 }
 
 export default function JobApplicantsTable() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 10;
   const statusOptions = ["Selected", "On Hold", "Pending", "Rejected"];
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [filteredApplicants, setFilteredApplicants] = useState<Applicant[]>([]);
+  const [totalJobs, setTotalJobs] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
-  const [sortOrder, setSortOrder] = useState("latest"); // "latest" or "oldest"
+  const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
 
   // Fetch applicants from API
   useEffect(() => {
@@ -67,14 +54,39 @@ export default function JobApplicantsTable() {
         const response = await fetch("/api/applications");
         if (!response.ok) throw new Error("Failed to fetch applicants");
         const data: Applicant[] = await response.json();
-        setApplicants(data);
-        setFilteredApplicants(data);
+        const normalizedApplicants = data.map((applicant: any) => ({
+          ...applicant,
+          _id:
+            typeof applicant._id === "string"
+              ? applicant._id
+              : applicant._id?.$oid || String(applicant._id || ""),
+          status: applicant.status || "Pending",
+        }));
+        setApplicants(normalizedApplicants);
+        setFilteredApplicants(normalizedApplicants);
       } catch (error) {
         console.error("Error fetching applicants:", error);
       }
     };
 
     fetchApplicants();
+  }, []);
+
+  useEffect(() => {
+    const fetchJobsCount = async () => {
+      try {
+        const response = await fetch("/api/jobs");
+        if (!response.ok) throw new Error("Failed to fetch jobs");
+        const data = await response.json();
+        const jobs = Array.isArray(data) ? data : Array.isArray(data?.jobs) ? data.jobs : [];
+        setTotalJobs(jobs.length);
+      } catch (error) {
+        console.error("Error fetching jobs count:", error);
+        setTotalJobs(0);
+      }
+    };
+
+    fetchJobsCount();
   }, []);
 
   // Apply filters and sorting
@@ -99,24 +111,12 @@ export default function JobApplicantsTable() {
       );
     }
 
-    // Apply sorting
-    // result.sort((a, b) => {
-    //   const dateA = new Date(a.appliedOn.split("/").reverse().join("/"));
-    //   const dateB = new Date(b.appliedOn.split("/").reverse().join("/"));
-
-    //   return sortOrder === "latest"
-    //     ? dateB.getTime() - dateA.getTime()
-    //     : dateA.getTime() - dateB.getTime();
-    // });
-    //     // Apply sorting
-    // result = result.sort((a, b) => {
-    //   const dateA = new Date(a.appliedOn.split("/").reverse().join("/"));
-    //   const dateB = new Date(b.appliedOn.split("/").reverse().join("/"));
-
-    //   return sortOrder === "latest"
-    //     ? dateB - dateA // Latest first
-    //     : dateA - dateB; // Oldest first
-    // });
+    // Apply sorting based on arrival time
+    result = result.sort((a, b) => {
+      const dateA = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+      const dateB = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+      return sortOrder === "latest" ? dateB - dateA : dateA - dateB;
+    });
 
     setFilteredApplicants(result);
   }, [applicants, searchQuery, statusFilter, sortOrder]);
@@ -150,12 +150,59 @@ export default function JobApplicantsTable() {
     }
   };
 
-  const updateStatus = (id: String, newStatus: string) => {
-    setApplicants(
-      applicants.map((applicant) =>
-        applicant._id === id ? { ...applicant, status: newStatus } : applicant
-      )
-    );
+  const formatArrivalDate = (submittedAt?: string) => {
+    if (!submittedAt) return "N/A";
+    const date = new Date(submittedAt);
+    if (Number.isNaN(date.getTime())) return "N/A";
+    return date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const formatArrivalTime = (submittedAt?: string) => {
+    if (!submittedAt) return "N/A";
+    const date = new Date(submittedAt);
+    if (Number.isNaN(date.getTime())) return "N/A";
+    return date.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const updateStatus = async (id: string, newStatus: string) => {
+    try {
+      setUpdatingStatusId(id);
+      const response = await fetch(`/api/applications/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update status");
+      }
+
+      setApplicants((prev) =>
+        prev.map((applicant) =>
+          applicant._id === id ? { ...applicant, status: newStatus } : applicant
+        )
+      );
+    } catch (error) {
+      console.error("Error updating application status:", error);
+    } finally {
+      setUpdatingStatusId(null);
+    }
+  };
+
+  const copyToClipboard = async (value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch (error) {
+      console.error("Failed to copy text:", error);
+    }
   };
 
   const toggleStatusFilter = (status: string) => {
@@ -172,12 +219,20 @@ export default function JobApplicantsTable() {
     setSortOrder("latest");
   };
 
+  const newThisWeekCount = applicants.filter((applicant) => {
+    if (!applicant.submittedAt) return false;
+    const submittedAt = new Date(applicant.submittedAt).getTime();
+    if (Number.isNaN(submittedAt)) return false;
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    return submittedAt >= sevenDaysAgo;
+  }).length;
+
   return (
     <div className="w-full space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatsCard
           title="Total Jobs posted"
-          value="20"
+          value={totalJobs.toString()}
           icon={<ArrowDownIcon className="h-6 w-6 text-blue-600" />}
           iconBg="bg-blue-100"
         />
@@ -197,7 +252,7 @@ export default function JobApplicantsTable() {
         />
         <StatsCard
           title="New this week"
-          value="10"
+          value={newThisWeekCount.toString()}
           icon={<MdQuestionMark className="h-6 w-6 text-orange-400" />}
           iconBg="bg-green-100"
         />
@@ -223,6 +278,42 @@ export default function JobApplicantsTable() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="text-black">
+              Filter Status
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {statusOptions.map((status) => (
+              <DropdownMenuCheckboxItem
+                key={status}
+                checked={statusFilter.includes(status)}
+                onCheckedChange={() => toggleStatusFilter(status)}
+              >
+                {status}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="text-black">
+              Sort: {sortOrder === "latest" ? "Latest First" : "Oldest First"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setSortOrder("latest")}>
+              Latest First
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortOrder("oldest")}>
+              Oldest First
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button variant="outline" className="text-black" onClick={clearFilters}>
+          Clear
+        </Button>
       </div>
 
       {/* Table */}
@@ -236,6 +327,7 @@ export default function JobApplicantsTable() {
                 <TableHead className="hidden sm:table-cell">Contact</TableHead>
                 <TableHead className="hidden sm:table-cell">Email</TableHead>
                 <TableHead className="hidden md:table-cell">Links</TableHead>
+                <TableHead className="hidden md:table-cell">Arrived On</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-[50px]">Action</TableHead>
               </TableRow>
@@ -243,7 +335,7 @@ export default function JobApplicantsTable() {
             <TableBody>
               {filteredApplicants.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
+                  <TableCell colSpan={7} className="text-center">
                     No results found.
                   </TableCell>
                 </TableRow>
@@ -256,13 +348,40 @@ export default function JobApplicantsTable() {
                         <p className="text-sm text-gray-500">
                           {applicant.jobTitle}
                         </p>
+                        <p className="text-xs text-gray-500">
+                          Exp: {applicant.experience || "N/A"}
+                        </p>
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <p className="text-sm">{applicant.phoneNumber}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm">{applicant.phoneNumber}</p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2"
+                          aria-label="Copy phone"
+                          title="Copy phone"
+                          onClick={() => copyToClipboard(applicant.phoneNumber)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <p className="text-sm">{applicant.email}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm">{applicant.email}</p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2"
+                          aria-label="Copy email"
+                          title="Copy email"
+                          onClick={() => copyToClipboard(applicant.email)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <div className="space-y-1">
@@ -284,14 +403,31 @@ export default function JobApplicantsTable() {
                         )}
                       </div>
                     </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <div className="text-sm">
+                        <p>{formatArrivalDate(applicant.submittedAt)}</p>
+                        <p className="text-xs text-gray-500">
+                          {formatArrivalTime(applicant.submittedAt)}
+                        </p>
+                      </div>
+                    </TableCell>
                     <TableCell>
-                      <Badge
-                        className={`font-normal whitespace-nowrap ${getStatusColor(
-                          applicant.status
-                        )}`}
+                      <select
+                        value={applicant.status || "Pending"}
+                        onChange={(e) =>
+                          updateStatus(applicant._id, e.target.value)
+                        }
+                        disabled={updatingStatusId === applicant._id}
+                        className={`text-xs rounded-md px-2 py-1 border bg-white ${getStatusColor(
+                          applicant.status || "Pending"
+                        )} ${updatingStatusId === applicant._id ? "opacity-50" : ""}`}
                       >
-                        {applicant.status || "Pending"}
-                      </Badge>
+                        {statusOptions.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -334,12 +470,28 @@ export default function JobApplicantsTable() {
                               </div>
                             )}
                           </div>
-                          <DropdownMenuRadioGroup
-                            value={applicant.status}
-                            onValueChange={(value) =>
-                              updateStatus(applicant._id, value)
-                            }
-                          ></DropdownMenuRadioGroup>
+                          {applicant.resumeUrl && (
+                            <DropdownMenuItem asChild>
+                              <Link
+                                href={applicant.resumeUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Open Resume
+                              </Link>
+                            </DropdownMenuItem>
+                          )}
+                          {applicant.portfolio && (
+                            <DropdownMenuItem asChild>
+                              <Link
+                                href={applicant.portfolio}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Open Portfolio
+                              </Link>
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuSeparator />
 
                           <DropdownMenuItem

@@ -1,15 +1,23 @@
 import nodemailer from "nodemailer";
 
-// Configure email transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+let transporter: nodemailer.Transporter | null = null;
+let verified = false;
+
+function getTransporter() {
+  if (transporter) return transporter;
+
+  transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || "smtp.gmail.com",
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  return transporter;
+}
 
 interface EmailOptions {
   to: string;
@@ -32,13 +40,24 @@ export async function sendEmail({ to, subject, html }: EmailOptions) {
       };
     }
 
-    // Verify connection configuration
-    console.log("Verifying SMTP connection...");
-    await transporter.verify();
-    console.log("SMTP connection verified successfully");
+    const activeTransporter = getTransporter();
+    if (!verified) {
+      console.log("Verifying SMTP connection...");
+      await activeTransporter.verify();
+      verified = true;
+      console.log("SMTP connection verified successfully");
+    }
 
-    const info = await transporter.sendMail({
-      from: process.env.SMTP_FROM || "info@dezainahub.com",
+    const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER;
+    if (!fromAddress) {
+      return {
+        success: false,
+        error: "Missing sender address. Set SMTP_FROM or SMTP_USER.",
+      };
+    }
+
+    const info = await activeTransporter.sendMail({
+      from: fromAddress,
       to,
       subject,
       html,
@@ -63,7 +82,8 @@ export async function sendEmail({ to, subject, html }: EmailOptions) {
 // Test email configuration
 export async function testEmailConfiguration() {
   try {
-    await transporter.verify();
+    const activeTransporter = getTransporter();
+    await activeTransporter.verify();
     console.log("Email configuration is valid");
     return { success: true };
   } catch (error) {

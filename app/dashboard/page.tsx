@@ -237,6 +237,10 @@ export default function DashboardPage() {
       // Error updating job visibility
     }
   };
+
+  const openJobs = jobs.filter((job) => job.isVisible !== false);
+  const closedJobs = jobs.filter((job) => job.isVisible === false);
+
   if (loading) return <p>Loading jobs...</p>;
 
   return (
@@ -262,20 +266,45 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {jobs.length > 0 ? (
-          jobs.map((job) => (
-            <JobCard
-              key={job.id}
-              job={job}
-              onEdit={confirmEdit}
-              onDelete={confirmDelete}
-              onToggleVisibility={handleToggleVisibility}
-            />
-          ))
-        ) : (
-          <p>No jobs found</p>
-        )}
+      <div className="space-y-8">
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold font-Manrope text-black">Open</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {openJobs.length > 0 ? (
+              openJobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  onEdit={confirmEdit}
+                  onDelete={confirmDelete}
+                  onToggleVisibility={handleToggleVisibility}
+                />
+              ))
+            ) : (
+              <p>No open jobs found</p>
+            )}
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold font-Manrope text-gray-500">Closed</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {closedJobs.length > 0 ? (
+              closedJobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  onEdit={confirmEdit}
+                  onDelete={confirmDelete}
+                  onToggleVisibility={handleToggleVisibility}
+                  muted
+                />
+              ))
+            ) : (
+              <p className="text-gray-500">No closed jobs found</p>
+            )}
+          </div>
+        </section>
       </div>
 
       {editJob && (
