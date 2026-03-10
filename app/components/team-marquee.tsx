@@ -15,6 +15,7 @@ export default function TeamMarquee() {
       role: "Lead Designer",
       image: "https://res.cloudinary.com/djicxkd9u/image/upload/v1746177016/Frame_1707482778-2_ubz9vy.png",
     },
+    
     {
       id: 3,
       name: "Minesh Patel",
@@ -52,6 +53,13 @@ export default function TeamMarquee() {
       role: "Human Resource",
       image: "https://res.cloudinary.com/duidq5rn4/image/upload/v1763744517/Dezainahub%20Assets/Team/Harsha_w55ksl.png",
     },
+    {
+        id: 9,
+      name: "Ashesh Bhattacharya",
+      role: "Software Engineer - Intern",
+      image: "https://res.cloudinary.com/duidq5rn4/image/upload/v1773162404/fsf8pkg2bcpiain0mtjk.jpg",
+    },
+    
   ]
 
   return (
