@@ -18,12 +18,10 @@ export default function NavBar() {
   const mainPages = [
     "/",
     "/projects",
-    "/products",
     "/career",
     
     "https://www.dezainahub.com/",
     "https://www.dezainahub.com/projects",
-    "https://www.dezainahub.com/products",
     "https://career.dezainahub.com",
     
   ]
@@ -34,7 +32,6 @@ export default function NavBar() {
   const navItems = [
     { name: "Home", path: "https://www.dezainahub.com/" },
     { name: "Projects", path: "https://www.dezainahub.com/projects" },
-    { name: "Product", path: "https://www.dezainahub.com/products" },
     { name: "Career", path: "https://career.dezainahub.com" },
     
   ]
