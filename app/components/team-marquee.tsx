@@ -7,7 +7,7 @@ export default function TeamMarquee() {
       id: 1,
       name: "Divyankit Singh",
       role: "Founder & Creative Director",
-      image: "https://res.cloudinary.com/duidq5rn4/image/upload/v1761340043/Dezainahub%20Assets/Team/Divyankit_l73gfs.png",
+      image: "https://res.cloudinary.com/duidq5rn4/image/upload/v1773163528/IMG_8555_sviusf.jpg",
     },
     {
       id: 2,
