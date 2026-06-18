@@ -390,38 +390,37 @@ const JobDescriptionPage: React.FC = () => {
             </div>
           </div>
         </header>
-        <main className="pb-16 flex flex-col md:flex-row relative mt-[103px] overflow-hidden">
-          {/* Left section: Back button and job title */}
-          <div className="mb-8 md:fixed md:w-[50%] border-gray-300">
-            <button
-              className="flex items-center text-gray-400 mb-4"
-              onClick={() => router.push("/")}
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back
-            </button>
-            <h1 className="mb-4 font-Manrope text-[32px] md:text-[52px] leading-[40px] md:leading-[64px] font-semibold">
-              {job.jobTitle}
-            </h1>
-            <div className="flex flex-wrap gap-4 text-sm">
-              <span className="border-r-[1px] border-hero_section_border pr-6 text-white text-Nunito text-[16px] md:text-[20px] font-normal leading-[24px] md:leading-[32px]">
-                {job.jobType}
-              </span>
-              <span className="border-r-[1px] border-hero_section_border pr-6 text-white text-Nunito text-[16px] md:text-[20px] font-normal leading-[24px] md:leading-[32px]">
-                {job.exp} years
-              </span>
-              <span className="border-r-[1px] border-hero_section_border pr-6 text-white text-Nunito text-[16px] md:text-[20px] font-normal leading-[24px] md:leading-[32px]">
-                {job.workType}
-              </span>
-              <span className="border-r-[1px] border-hero_section_border pr-6 text-white text-Nunito text-[16px] md:text-[20px] font-normal leading-[24px] md:leading-[32px]">
-                {job.ctc}
-              </span>
+        <main className="pb-16 mt-[103px] px-5 overflow-hidden">
+          <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row md:gap-12 lg:gap-20">
+            {/* Left section: Back button and job title */}
+            <div className="mb-8 md:mb-0 md:w-1/2 md:flex-shrink-0 md:sticky md:top-[1px] md:self-start md:h-fit border-gray-300">
+              <button
+                className="flex items-center text-gray-400 mb-4"
+                onClick={() => router.push("/")}
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back
+              </button>
+              <h1 className="mb-4 font-Manrope text-[32px] md:text-[52px] leading-[40px] md:leading-[64px] font-semibold break-words">
+                {job.jobTitle}
+              </h1>
+              <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                <span className="border-r-[1px] border-hero_section_border pr-6 text-white text-Nunito text-[16px] md:text-[20px] font-normal leading-[24px] md:leading-[32px]">
+                  {job.jobType}
+                </span>
+                <span className="border-r-[1px] border-hero_section_border pr-6 text-white text-Nunito text-[16px] md:text-[20px] font-normal leading-[24px] md:leading-[32px]">
+                  {job.exp} years
+                </span>
+                <span className="border-r-[1px] border-hero_section_border pr-6 text-white text-Nunito text-[16px] md:text-[20px] font-normal leading-[24px] md:leading-[32px]">
+                  {job.workType}
+                </span>
+                <span className="border-r-[1px] border-hero_section_border pr-6 text-white text-Nunito text-[16px] md:text-[20px] font-normal leading-[24px] md:leading-[32px]">
+                  {job.ctc}
+                </span>
+              </div>
             </div>
-          </div>
-          {/* Right section */}
-          <div className="flex md:flex-row flex-col w-full">
-            <div className="w-full sm:min-w-[50%]"></div>
-            <div className="min-h-[100svh] w-full sm:min-w-[50%] relative p-l-[50%]">
+            {/* Right section */}
+            <div className="w-full md:w-1/2 md:flex-shrink-0 min-h-[100svh]">
               {/* About Us */}
               <div className="mb-12 flex flex-col gap-2">
                 <h2 className="text-[28px] md:text-[40px] leading-[36px] md:leading-[52px] font-semibold font-Manrope text-white">
