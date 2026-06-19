@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDatabase } from "../../lib/mongodb";
+import clientPromise from "../../lib/mongodb";
 import {
   sendEmail,
   generateSubmissionConfirmationEmail,
@@ -18,7 +18,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const db = await getDatabase();
+    const client = await clientPromise;
+    const db = client.db("carrierportal");
     const collection = db.collection("assignments");
 
     const result = await collection.insertOne({
