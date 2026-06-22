@@ -425,9 +425,17 @@ export default function JobApplicantsTable() {
                       </div>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
-                      <p className="text-sm text-gray-500">
-                        {new Date(assignment.submittedAt).toLocaleDateString()}
-                      </p>
+                      <div className="space-y-0.5">
+                        <p className="text-sm text-gray-500">
+                          {new Date(assignment.submittedAt).toLocaleDateString()}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(assignment.submittedAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
