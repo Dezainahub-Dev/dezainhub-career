@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase } from "../../lib/mongodb";
+
+export const dynamic = 'force-dynamic';
 import {
   sendEmail,
   generateApplicationConfirmationEmail,
